@@ -8,7 +8,7 @@ import express, {NextFunction, Request, Response, Router} from 'express';
 
 const authController: Router = express.Router();
 const SESSION_EXPIRATION_DAYS = 30;
-//
+
 const signup = async (req: Request, res: Response, next: NextFunction) => {
   const {email, username, password}: Record<string, string> = req.body;
 
