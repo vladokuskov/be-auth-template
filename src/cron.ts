@@ -9,6 +9,7 @@ export class Cron {
 
   public async run() {
     logger.info('Running cron');
+
     // Clean expired sessions every hour
     this.cron.schedule('0 * * * *', cleanExpiredSessionsJob);
   }
