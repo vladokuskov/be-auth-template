@@ -1,16 +1,15 @@
 import {Session} from '@/entities/Session.entity';
 import {User} from '@/entities/User.entity';
 import validate from '@/middlewares/validationMiddleware';
-import {signUpSchema} from '@/schemas/auth.schema';
+import {loginSchema, signUpSchema} from '@/schemas/auth.schema';
 import dbService from '@/services/db.service';
 import bcrypt from 'bcrypt';
 import express, {NextFunction, Request, Response, Router} from 'express';
 
 const authController: Router = express.Router();
+const SESSION_EXPIRATION_DAYS = 30;
 
-const register = async (req: Request, res: Response, next: NextFunction) => {
-  const SESSION_EXPIRATION_DAYS = 30;
-
+const signup = async (req: Request, res: Response, next: NextFunction) => {
   const {email, username, password}: Record<string, string> = req.body;
 
   try {
@@ -40,6 +39,41 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-authController.post('/register', validate(signUpSchema), register);
+const login = async (req: Request, res: Response, next: NextFunction) => {
+  const {email, password}: Record<string, string> = req.body;
+
+  try {
+    const em = await dbService.getEntityManager();
+
+    const existingUser = await em.findOne(User, {email});
+    if (!existingUser) {
+      res.status(404).send({error: 'User not found'});
+      return;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+
+    if (!isPasswordValid) {
+      res.status(400).send({error: 'Wrong credentials'});
+      return;
+    }
+
+    const existedSession = await em.findOne(Session, {userId: existingUser.id});
+    if (existedSession) await em.remove(existedSession);
+
+    // expire 1 month from now
+    const expiresAt = new Date(Date.now() + SESSION_EXPIRATION_DAYS * 24 * 60 * 60 * 1000);
+    const session = new Session({userId: existingUser.id, expiresAt});
+
+    await em.persist(session).flush();
+
+    res.status(200).send({message: 'User logged in', session});
+  } catch (err) {
+    next(err);
+  }
+};
+
+authController.post('/signup', validate(signUpSchema), signup);
+authController.post('/login', validate(loginSchema), login);
 
 export default authController;
