@@ -1,4 +1,5 @@
-import errorHandler from '@/middlewares/errorHandler';
+import globalErrorMiddleware from '@/middlewares/globalErrorMiddleware';
+import ormContextMiddleware from '@/middlewares/ormContextMiddleware';
 import router from '@/router';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -13,9 +14,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-app.use(router);
+// Register middlewares
+app.use(globalErrorMiddleware);
+app.use(ormContextMiddleware);
 
-// Register global error handler
-app.use(errorHandler);
+app.use(router);
 
 export default app;

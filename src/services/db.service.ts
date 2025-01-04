@@ -1,11 +1,11 @@
 import {dbConfig} from '@/configs/db.config';
 import logger from '@/logger';
-import {ISchemaGenerator, MikroORM as MikroORMType} from '@mikro-orm/core';
-import {MikroORM} from '@mikro-orm/postgresql';
+import {ISchemaGenerator} from '@mikro-orm/core';
+import {EntityManager, MikroORM, Options, PostgreSqlDriver} from '@mikro-orm/postgresql';
 import {TsMorphMetadataProvider} from '@mikro-orm/reflection';
 
 class DatabaseService {
-  public orm: MikroORMType | null = null;
+  public orm: MikroORM<PostgreSqlDriver> | null = null;
 
   constructor() {
     this.orm = null;
@@ -13,7 +13,7 @@ class DatabaseService {
 
   async connect(): Promise<void> {
     try {
-      this.orm = await MikroORM.init({
+      const options: Options = {
         // Paths for entities
         entities: ['./dist/app/**/*.entity.js'],
         entitiesTs: ['./src/entities/**/*.entity.ts'],
@@ -27,7 +27,9 @@ class DatabaseService {
         dbName: dbConfig.name,
         host: dbConfig.host,
         port: dbConfig.port,
-      });
+      };
+
+      this.orm = await MikroORM.init<PostgreSqlDriver>(options);
 
       const generator: ISchemaGenerator = this.orm.getSchemaGenerator();
       await generator.updateSchema();
@@ -42,7 +44,7 @@ class DatabaseService {
     if (!this.orm) {
       throw new Error('ORM has not been initialized');
     }
-    return this.orm.em.fork();
+    return this.orm.em as EntityManager;
   }
 }
 
