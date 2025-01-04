@@ -1,4 +1,4 @@
-import cleanExpiredSessionsJob from '@/jobs/cleanExpiredSessionsJob';
+import cleanExpiredSessionsJob from '@/jobs/cleanExpiredSessions.job';
 import logger from '@/logger';
 import cronInstance, {schedule} from 'node-cron';
 
