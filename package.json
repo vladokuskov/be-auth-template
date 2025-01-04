@@ -1,52 +1,54 @@
 {
-  "name": "session-postgresql-auth",
-  "version": "0.0.1",
-  "author": "Vladylsav Okuskov <vladokuskov@gmail.com>",
-  "license": "MIT",
-  "private": true,
-  "main": "dist/server.js",
-  "scripts": {
-    "dev": "tsx watch --clear-screen=false src/server.ts",
-    "build": "tsup",
-    "start": "node dist/server.js"
-  },
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "dependencies": {
-    "@mikro-orm/core": "^6.4.2",
-    "@mikro-orm/postgresql": "^6.4.2",
-    "@mikro-orm/reflection": "^6.4.2",
-    "bcrypt": "^5.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "joi": "^17.13.3",
-    "pino": "^9.6.0",
-    "pino-pretty": "^13.0.0",
-    "uuid": "^11.0.3"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.10.5",
-    "prettier": "^3.4.1",
-    "prettier-plugin-organize-imports": "^4.1.0",
-    "reflect-metadata": "^0.2.2",
-    "tsup": "^8.3.5",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
-  },
-  "tsup": {
-    "entry": [
-      "src"
-    ],
-    "splitting": false,
-    "sourcemap": true,
-    "clean": true
-  },
-  "mikro-orm": {
-    "useTsNode": true
-  }
+   "name": "session-postgresql-auth",
+   "version": "0.0.1",
+   "author": "Vladylsav Okuskov <vladokuskov@gmail.com>",
+   "license": "MIT",
+   "private": true,
+   "main": "dist/server.js",
+   "scripts": {
+      "dev": "tsx watch --clear-screen=false src/server.ts",
+      "build": "tsup",
+      "start": "ts-node src/index.ts",
+      "typeorm": "typeorm-ts-node-commonjs"
+   },
+   "engines": {
+      "node": ">=20.0.0"
+   },
+   "dependencies": {
+      "bcrypt": "^5.1.1",
+      "cors": "^2.8.5",
+      "dotenv": "^16.4.5",
+      "express": "^4.21.1",
+      "joi": "^17.13.3",
+      "pg": "^8.4.0",
+      "pino": "^9.6.0",
+      "pino-pretty": "^13.0.0",
+      "reflect-metadata": "^0.2.2",
+      "typeorm": "0.3.20",
+      "uuid": "^11.0.3"
+   },
+   "devDependencies": {
+      "@types/bcrypt": "^5.0.2",
+      "@types/cors": "^2.8.17",
+      "@types/express": "^5.0.0",
+      "@types/node": "^16.11.10",
+      "prettier": "^3.4.1",
+      "prettier-plugin-organize-imports": "^4.1.0",
+      "reflect-metadata": "^0.2.2",
+      "ts-node": "10.9.1",
+      "tsup": "^8.3.5",
+      "tsx": "^4.19.2",
+      "typescript": "4.5.2"
+   },
+   "tsup": {
+      "entry": [
+         "src"
+      ],
+      "splitting": false,
+      "sourcemap": true,
+      "clean": true
+   },
+   "mikro-orm": {
+      "useTsNode": true
+   }
 }

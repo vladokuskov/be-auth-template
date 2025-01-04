@@ -1,17 +1,11 @@
-import {BaseEntity} from '@/entities/BaseEntity.entity';
-import {Entity, Property} from '@mikro-orm/core';
+import {BaseEntity} from '@/entities/Base.entity';
+import {Column, Entity} from 'typeorm';
 
-@Entity({tableName: 'sessions'})
+@Entity('sessions')
 export class Session extends BaseEntity {
-  @Property()
-  userId!: string;
+  @Column({type: 'text'})
+  userId: string;
 
-  @Property()
-  expiresAt!: Date;
-
-  constructor({userId, expiresAt}: Partial<Session>) {
-    super();
-    this.userId = userId!;
-    this.expiresAt = expiresAt!;
-  }
+  @Column({type: 'date'})
+  expiresAt: Date;
 }

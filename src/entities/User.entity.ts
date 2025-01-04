@@ -1,21 +1,14 @@
-import {BaseEntity} from '@/entities/BaseEntity.entity';
-import {Entity, Property} from '@mikro-orm/core';
+import {BaseEntity} from '@/entities/Base.entity';
+import {Column, Entity} from 'typeorm';
 
-@Entity({tableName: 'users'})
+@Entity('users')
 export class User extends BaseEntity {
-  @Property()
-  email!: string;
+  @Column({type: 'text'})
+  email: string;
 
-  @Property()
-  username!: string;
+  @Column({type: 'text'})
+  username: string;
 
-  @Property()
-  password!: string;
-
-  constructor({email, username, password}: Partial<User>) {
-    super();
-    this.email = email!;
-    this.username = username!;
-    this.password = password!;
-  }
+  @Column({type: 'text'})
+  password: string;
 }

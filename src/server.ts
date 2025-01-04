@@ -15,7 +15,7 @@ const initializeServices = async () => {
 };
 
 // Initialize services
-initializeServices();
+void initializeServices();
 
 app.listen(port, () => {
   logger.info(`Server listening on port ${port}`);

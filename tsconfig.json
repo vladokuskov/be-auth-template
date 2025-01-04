@@ -1,22 +1,24 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS",
-    "baseUrl": ".",
-    "experimentalDecorators": true,
+   "compilerOptions": {
+    "lib": [
+       "es5",
+       "es6"
+    ],
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+     "baseUrl": ".",
+     "outDir": "./dist",
+     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
-    "moduleResolution": "Node",
-    "outDir": "dist",
-    "importsNotUsedAsValues": "remove",
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["node"],
-    "paths": {
-      "@/*": ["src/*"]
-    }
-  },
+    "experimentalDecorators": true,
+     "types": ["node"],
+     "paths": {
+       "@/*": [
+         "src/*"
+       ]
+     }
+   },
   "filesGlob": [
     "**/*.ts"
   ],

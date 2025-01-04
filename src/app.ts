@@ -1,5 +1,6 @@
-import globalErrorMiddleware from '@/middlewares/globalErrorMiddleware';
-import ormContextMiddleware from '@/middlewares/ormContextMiddleware';
+import 'reflect-metadata';
+
+import errorMiddleware from '@/middlewares/error.middleware';
 import router from '@/router';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -15,8 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 // Register middlewares
-app.use(globalErrorMiddleware);
-app.use(ormContextMiddleware);
+app.use(errorMiddleware);
 
 app.use(router);
 
