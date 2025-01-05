@@ -1,13 +1,9 @@
+import {User} from '@/components/user/user.entity';
 import {authConfig} from '@/configs/auth.config';
 import {Session} from '@/entities/Session.entity';
-import {User} from '@/entities/User.entity';
-import validate from '@/middlewares/validation.middleware';
-import {loginSchema, signUpSchema} from '@/schemas/auth.schema';
 import dbService from '@/services/db.service';
 import bcrypt from 'bcrypt';
-import express, {NextFunction, Request, Response, Router} from 'express';
-
-const authController: Router = express.Router();
+import {NextFunction, Request, Response} from 'express';
 
 const signup = async (req: Request, res: Response, next: NextFunction) => {
   const {email, username, password}: Record<string, string> = req.body;
@@ -87,7 +83,4 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-authController.post('/signup', validate(signUpSchema), signup);
-authController.post('/login', validate(loginSchema), login);
-
-export default authController;
+export {signup, login};

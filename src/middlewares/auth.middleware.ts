@@ -1,7 +1,7 @@
+import {User} from '@/components/user/user.entity';
 import {appConfig} from '@/configs/app.config';
 import {authConfig} from '@/configs/auth.config';
 import {Session} from '@/entities/Session.entity';
-import {User} from '@/entities/User.entity';
 import dbService from '@/services/db.service';
 import {NextFunction, Request, Response} from 'express';
 

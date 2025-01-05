@@ -1,11 +1,9 @@
-import 'reflect-metadata';
-
-import {authMiddleWare} from '@/middlewares/auth.middleware';
+import api from '@/api';
 import errorMiddleware from '@/middlewares/error.middleware';
-import {privateRouter, publicRouter} from '@/router';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express, {Express} from 'express';
+import 'reflect-metadata';
 
 dotenv.config();
 
@@ -19,8 +17,7 @@ app.use(express.urlencoded({extended: true}));
 // Register middlewares
 app.use(errorMiddleware);
 
-// Register routers
-app.use(publicRouter);
-app.use(authMiddleWare, privateRouter);
+// Register api routes
+app.use(api);
 
 export default app;

@@ -1,6 +1,4 @@
-import express, {NextFunction, Request, Response, Router} from 'express';
-
-const userController: Router = express.Router();
+import {NextFunction, Request, Response} from 'express';
 
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -13,6 +11,4 @@ const getUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-userController.get('/me', getUser);
-
-export default userController;
+export {getUser};
