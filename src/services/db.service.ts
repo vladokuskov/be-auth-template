@@ -26,11 +26,6 @@ class DatabaseService {
     }
     return this.dataSource;
   }
-
-  async getEntityManager() {
-    const dataSource = this.getDataSource();
-    return dataSource.manager;
-  }
 }
 
 const databaseService = new DatabaseService();
