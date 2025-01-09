@@ -1,17 +1,14 @@
-import {User} from '@/components/user/user.entity';
+import authRepository from '@/components/auth/auth.repository';
+import userRepository from '@/components/user/user.repository';
 import {authConfig} from '@/configs/auth.config';
-import {Session} from '@/entities/Session.entity';
-import dbService from '@/services/db.service';
 import bcrypt from 'bcrypt';
-import {NextFunction, Request, Response} from 'express';
+import {NextFunction, Request, RequestHandler, Response} from 'express';
 
-const signup = async (req: Request, res: Response, next: NextFunction) => {
+const signup: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   const {email, username, password}: Record<string, string> = req.body;
 
   try {
-    const em = await dbService.getEntityManager();
-
-    const existingUser = await em.findOne(User, {where: {email}});
+    const existingUser = await userRepository.getUserByEmail(email);
     if (existingUser) {
       res.status(400).send({error: 'User already exists'});
       return;
@@ -19,15 +16,11 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = em.create(User, {email, password: hashedPassword, username});
-
-    await em.save(user);
+    const user = await userRepository.createUser({email, password: hashedPassword, username});
 
     // expire 1 month from now
     const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-    const session = em.create(Session, {userId: user.id, expiresAt});
-
-    await em.save(session);
+    const session = await authRepository.createSession(user.id, expiresAt);
 
     res.cookie('sessionId', session.id, {
       httpOnly: true,
@@ -36,21 +29,19 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
       sameSite: 'none',
     });
 
-    res.status(200).send({message: 'User created', session});
+    res.status(200).send({message: 'User created'});
   } catch (err) {
     next(err);
   }
 };
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
+const login: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   const {email, password}: Record<string, string> = req.body;
 
   try {
-    const em = await dbService.getEntityManager();
-
-    const existingUser = await em.findOne(User, {where: {email}});
+    const existingUser = await userRepository.getUserByEmail(email);
     if (!existingUser) {
-      res.status(404).send({error: 'User not found'});
+      res.status(404).send({error: 'Wrong credentials'});
       return;
     }
 
@@ -61,14 +52,12 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
-    const existedSession = await em.findOne(Session, {where: {userId: existingUser.id}});
-    if (existedSession) await em.remove(existedSession);
+    const existedSession = await authRepository.getSession(existingUser.id);
+    if (existedSession) await authRepository.removeSession(existedSession.id);
 
     // expire 1 month from now
     const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-    const session = em.create(Session, {userId: existingUser.id, expiresAt});
-
-    await em.save(session);
+    const session = await authRepository.createSession(existingUser.id, expiresAt);
 
     res.cookie('sessionId', session.id, {
       httpOnly: true,
