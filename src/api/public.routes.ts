@@ -1,7 +1,7 @@
 import authRoutes from '@/components/auth/auth.routes';
-import express from 'express';
+import express, {Router} from 'express';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.use('/auth', authRoutes);
 
