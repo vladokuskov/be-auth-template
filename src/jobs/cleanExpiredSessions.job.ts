@@ -4,11 +4,9 @@ import databaseService from '@/services/db.service';
 
 const cleanExpiredSessionsJob = async () => {
   try {
-    const em = await databaseService.getEntityManager();
-
     const currentDate = new Date();
 
-    const result = await em
+    const result = await databaseService.em
       .createQueryBuilder()
       .delete()
       .from(Session)

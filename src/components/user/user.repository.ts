@@ -1,6 +1,5 @@
 import {CreateUserArgs} from '@/@types/CreateUserArgs';
-import {User} from '@/components/user/user.entity';
-import {Session} from '@/entities/Session.entity';
+import {User} from '@/entities/User.entity';
 import dbService from '@/services/db.service';
 
 class UserRepository {
@@ -15,8 +14,8 @@ class UserRepository {
     return this.em.findOne(User, {where: {email}});
   }
 
-  async removeSession(sessionId: string): Promise<void> {
-    await this.em.delete(Session, {id: sessionId});
+  async getUserById(id: string): Promise<User | null> {
+    return this.em.findOne(User, {where: {id}});
   }
 }
 

@@ -9,14 +9,22 @@ class AuthRepository {
     return this.em.save(session);
   }
 
-  async getSession(userId: string): Promise<Session | null> {
+  async getSessionById(userId: string): Promise<Session | null> {
+    return this.em.findOne(Session, {where: {userId}});
+  }
+
+  async getSessionByUserId(userId: string): Promise<Session | null> {
     return this.em.findOne(Session, {where: {userId}});
   }
 
   async removeSession(sessionId: string): Promise<void> {
     await this.em.delete(Session, {id: sessionId});
   }
+
+  async updateSession(sessionId: string, data: Partial<Session>) {
+    return await this.em.update(Session, {id: sessionId}, data);
+  }
 }
 
-const authRepository = new AuthRepository();
+const authRepository: AuthRepository = new AuthRepository();
 export default authRepository;

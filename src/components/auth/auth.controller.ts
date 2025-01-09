@@ -4,72 +4,74 @@ import {authConfig} from '@/configs/auth.config';
 import bcrypt from 'bcrypt';
 import {NextFunction, Request, RequestHandler, Response} from 'express';
 
-const signup: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
-  const {email, username, password}: Record<string, string> = req.body;
+class AuthController {
+  signup: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+    const {email, username, password}: Record<string, string> = req.body;
 
-  try {
-    const existingUser = await userRepository.getUserByEmail(email);
-    if (existingUser) {
-      res.status(400).send({error: 'User already exists'});
-      return;
+    try {
+      const existingUser = await userRepository.getUserByEmail(email);
+      if (existingUser) {
+        res.status(400).send({error: 'User already exists'});
+        return;
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const user = await userRepository.createUser({email, password: hashedPassword, username});
+
+      // expire 1 month from now
+      const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
+      const session = await authRepository.createSession(user.id, expiresAt);
+
+      res.cookie('sessionId', session.id, {
+        httpOnly: true,
+        secure: false,
+        expires: session.expiresAt,
+        sameSite: 'none',
+      });
+
+      res.status(200).send({message: 'User created'});
+    } catch (err) {
+      next(err);
     }
+  };
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+  login: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+    const {email, password}: Record<string, string> = req.body;
 
-    const user = await userRepository.createUser({email, password: hashedPassword, username});
+    try {
+      const existingUser = await userRepository.getUserByEmail(email);
+      if (!existingUser) {
+        res.status(404).send({error: 'Wrong credentials'});
+        return;
+      }
 
-    // expire 1 month from now
-    const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-    const session = await authRepository.createSession(user.id, expiresAt);
+      const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
-    res.cookie('sessionId', session.id, {
-      httpOnly: true,
-      secure: false,
-      expires: session.expiresAt,
-      sameSite: 'none',
-    });
+      if (!isPasswordValid) {
+        res.status(400).send({error: 'Wrong credentials'});
+        return;
+      }
 
-    res.status(200).send({message: 'User created'});
-  } catch (err) {
-    next(err);
-  }
-};
+      const existedSession = await authRepository.getSessionById(existingUser.id);
+      if (existedSession) await authRepository.removeSession(existedSession.id);
 
-const login: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
-  const {email, password}: Record<string, string> = req.body;
+      // expire 1 month from now
+      const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
+      const session = await authRepository.createSession(existingUser.id, expiresAt);
 
-  try {
-    const existingUser = await userRepository.getUserByEmail(email);
-    if (!existingUser) {
-      res.status(404).send({error: 'Wrong credentials'});
-      return;
+      res.cookie('sessionId', session.id, {
+        httpOnly: true,
+        secure: false,
+        expires: session.expiresAt,
+        sameSite: 'none',
+      });
+
+      res.status(200).send({message: 'User logged in'});
+    } catch (err) {
+      next(err);
     }
-
-    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
-
-    if (!isPasswordValid) {
-      res.status(400).send({error: 'Wrong credentials'});
-      return;
-    }
-
-    const existedSession = await authRepository.getSession(existingUser.id);
-    if (existedSession) await authRepository.removeSession(existedSession.id);
-
-    // expire 1 month from now
-    const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-    const session = await authRepository.createSession(existingUser.id, expiresAt);
-
-    res.cookie('sessionId', session.id, {
-      httpOnly: true,
-      secure: false,
-      expires: session.expiresAt,
-      sameSite: 'none',
-    });
-
-    res.status(200).send({message: 'User logged in'});
-  } catch (err) {
-    next(err);
-  }
-};
-
-export {signup, login};
+  };
+}
+const authController: AuthController = new AuthController();
+export default authController;
