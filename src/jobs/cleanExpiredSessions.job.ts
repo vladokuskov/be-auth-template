@@ -1,17 +1,12 @@
 import {Session} from '@/entities/Session.entity';
-import logger from '@/logger';
-import databaseService from '@/services/db.service';
+import {logger} from '@/logger';
+import em from '@/managers/entity.manager';
 
 const cleanExpiredSessionsJob = async () => {
   try {
     const currentDate = new Date();
 
-    const result = await databaseService.em
-      .createQueryBuilder()
-      .delete()
-      .from(Session)
-      .where('expiresAt < :currentDate', {currentDate})
-      .execute();
+    const result = await em.deleteWithCondition(Session, 'expiresAt < :currentDate', {currentDate});
 
     logger.info(`Cleaned ${result.affected} expired sessions`);
   } catch (err) {

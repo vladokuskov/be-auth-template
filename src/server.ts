@@ -1,6 +1,6 @@
 import app from '@/app';
 import cron from '@/cron';
-import logger from '@/logger';
+import {logger} from '@/logger';
 import dbService from '@/services/db.service';
 import process from 'node:process';
 

@@ -1,5 +1,5 @@
 import {appConfig} from '@/configs/app.config';
-import logger from '@/logger';
+import {logger} from '@/logger';
 import {NextFunction, Request, Response} from 'express';
 
 export const errorMiddleware = (err: Error, req: Request, res: Response, next: NextFunction) => {

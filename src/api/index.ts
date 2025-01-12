@@ -6,6 +6,6 @@ import {Router} from 'express';
 const router: Router = Router();
 
 router.use(publicRoutes);
-router.use(protectedRoutes, authMiddleWare);
+router.use(authMiddleWare, protectedRoutes);
 
 export default router;

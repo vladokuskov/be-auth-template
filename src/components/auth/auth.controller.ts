@@ -1,6 +1,7 @@
-import authRepository from '@/components/auth/auth.repository';
-import userRepository from '@/components/user/user.repository';
 import {authConfig} from '@/configs/auth.config';
+import {Session} from '@/entities/Session.entity';
+import {User} from '@/entities/User.entity';
+import em from '@/managers/entity.manager';
 import bcrypt from 'bcrypt';
 import {NextFunction, Request, RequestHandler, Response} from 'express';
 
@@ -9,7 +10,7 @@ class AuthController {
     const {email, username, password}: Record<string, string> = req.body;
 
     try {
-      const existingUser = await userRepository.getUserByEmail(email);
+      const existingUser = await em.findOne(User, {where: {email}});
       if (existingUser) {
         res.status(400).send({error: 'User already exists'});
         return;
@@ -17,11 +18,13 @@ class AuthController {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const user = await userRepository.createUser({email, password: hashedPassword, username});
+      const user = em.create(User, {email, password: hashedPassword, username});
+      await em.save(user);
 
       // expire 1 month from now
       const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-      const session = await authRepository.createSession(user.id, expiresAt);
+      const session = em.create(Session, {userId: user.id, expiresAt});
+      await em.save(session);
 
       res.cookie('sessionId', session.id, {
         httpOnly: true,
@@ -40,7 +43,7 @@ class AuthController {
     const {email, password}: Record<string, string> = req.body;
 
     try {
-      const existingUser = await userRepository.getUserByEmail(email);
+      const existingUser = await em.findOne(User, {where: {email}});
       if (!existingUser) {
         res.status(404).send({error: 'Wrong credentials'});
         return;
@@ -53,12 +56,13 @@ class AuthController {
         return;
       }
 
-      const existedSession = await authRepository.getSessionById(existingUser.id);
-      if (existedSession) await authRepository.removeSession(existedSession.id);
+      const existedSession = await em.findOne(Session, {where: {userId: existingUser.id}});
+      if (existedSession) await em.delete(Session, {id: existedSession.id});
 
       // expire 1 month from now
       const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-      const session = await authRepository.createSession(existingUser.id, expiresAt);
+      const session = em.create(Session, {userId: existingUser.id, expiresAt});
+      await em.save(session);
 
       res.cookie('sessionId', session.id, {
         httpOnly: true,

@@ -1,5 +1,5 @@
 import cleanExpiredSessionsJob from '@/jobs/cleanExpiredSessions.job';
-import logger from '@/logger';
+import {logger} from '@/logger';
 import cronInstance, {schedule} from 'node-cron';
 
 type CronInstance = {schedule: typeof schedule};

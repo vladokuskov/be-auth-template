@@ -1,7 +1,8 @@
-import authRepository from '@/components/auth/auth.repository';
-import userRepository from '@/components/user/user.repository';
 import {appConfig} from '@/configs/app.config';
 import {authConfig} from '@/configs/auth.config';
+import {Session} from '@/entities/Session.entity';
+import {User} from '@/entities/User.entity';
+import em from '@/managers/entity.manager';
 import {NextFunction, Request, Response} from 'express';
 
 export const authMiddleWare = async (req: Request, res: Response, next: NextFunction) => {
@@ -19,14 +20,14 @@ export const authMiddleWare = async (req: Request, res: Response, next: NextFunc
     if (matches && matches[1]?.length) {
       const sessionId = matches[1];
 
-      const session = await authRepository.getSessionByUserId(sessionId);
+      const session = await em.findOne(Session, {where: {id: sessionId}});
 
       if (!session) {
         res.status(401).json({error: 'Not authorized'});
         return;
       }
 
-      const user = await userRepository.getUserById(session.userId);
+      const user = await em.findOne(User, {where: {id: session.userId}});
 
       if (!user) {
         res.status(401).json({error: 'Not authorized'});
@@ -35,7 +36,7 @@ export const authMiddleWare = async (req: Request, res: Response, next: NextFunc
 
       // Renew the session expire time
       const newExpiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-      await authRepository.updateSession(session.id, {expiresAt: newExpiresAt});
+      await em.update(Session, {id: sessionId}, {expiresAt: newExpiresAt});
 
       req.user = user;
       req.session = session;
