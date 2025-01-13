@@ -4,13 +4,14 @@ import {Session} from '@/entities/Session.entity';
 import {User} from '@/entities/User.entity';
 import em from '@/managers/entity.manager';
 import {NextFunction, Request, Response} from 'express';
+import {StatusCodes} from 'http-status-codes';
 
 export const authMiddleWare = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cookies = req.headers.cookie;
 
     if (!cookies || !cookies.length) {
-      res.status(401).json({error: 'Not authorized'});
+      res.status(StatusCodes.UNAUTHORIZED).json({error: 'Not authorized'});
       return;
     }
 
@@ -23,14 +24,14 @@ export const authMiddleWare = async (req: Request, res: Response, next: NextFunc
       const session = await em.findOne(Session, {where: {id: sessionId}});
 
       if (!session) {
-        res.status(401).json({error: 'Not authorized'});
+        res.status(StatusCodes.UNAUTHORIZED).json({error: 'Not authorized'});
         return;
       }
 
       const user = await em.findOne(User, {where: {id: session.userId}});
 
       if (!user) {
-        res.status(401).json({error: 'Not authorized'});
+        res.status(StatusCodes.UNAUTHORIZED).json({error: 'Not authorized'});
         return;
       }
 
@@ -45,9 +46,9 @@ export const authMiddleWare = async (req: Request, res: Response, next: NextFunc
       return;
     }
 
-    res.status(401).json({error: 'Not authorized'});
+    res.status(StatusCodes.UNAUTHORIZED).json({error: 'Not authorized'});
     return;
   } catch (err) {
-    res.status(500).json({error: appConfig.defaultErrMessage});
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({error: appConfig.defaultErrMessage});
   }
 };

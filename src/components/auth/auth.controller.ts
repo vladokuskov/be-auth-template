@@ -9,6 +9,7 @@ import em from '@/managers/entity.manager';
 import emailService from '@/services/email.service';
 import bcrypt from 'bcrypt';
 import {NextFunction, Request, RequestHandler, Response} from 'express';
+import {StatusCodes} from 'http-status-codes';
 
 class AuthController {
   signup: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
@@ -17,7 +18,7 @@ class AuthController {
     try {
       const existingUser = await em.findOne(User, {where: {email}});
       if (existingUser) {
-        res.status(400).send({error: 'User already exists'});
+        res.status(StatusCodes.BAD_REQUEST).send({error: 'User already exists'});
         return;
       }
 
@@ -38,7 +39,7 @@ class AuthController {
         sameSite: 'none',
       });
 
-      res.status(200).send({message: 'User created'});
+      res.status(StatusCodes.OK).send({message: 'User created'});
     } catch (err) {
       next(err);
     }
@@ -50,14 +51,14 @@ class AuthController {
     try {
       const existingUser = await em.findOne(User, {where: {email}});
       if (!existingUser) {
-        res.status(404).send({error: 'Wrong credentials'});
+        res.status(StatusCodes.NOT_FOUND).send({error: 'Wrong credentials'});
         return;
       }
 
       const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
       if (!isPasswordValid) {
-        res.status(400).send({error: 'Wrong credentials'});
+        res.status(StatusCodes.BAD_REQUEST).send({error: 'Wrong credentials'});
         return;
       }
 
@@ -76,7 +77,7 @@ class AuthController {
         sameSite: 'none',
       });
 
-      res.status(200).send({message: 'User logged in'});
+      res.status(StatusCodes.OK).send({message: 'User logged in'});
     } catch (err) {
       next(err);
     }
@@ -91,7 +92,7 @@ class AuthController {
       const existingUser = await em.findOne(User, {where: {email}});
 
       if (!existingUser) {
-        res.status(200).send({message});
+        res.status(StatusCodes.OK).send({message});
         return;
       }
 
@@ -110,7 +111,7 @@ class AuthController {
 
       await emailService.send(EmailTemplate.MAGIC_LINK, {magicToken, to: email, host: getClientHost()});
 
-      res.status(200).send({message});
+      res.status(StatusCodes.OK).send({message});
     } catch (err) {
       next(err);
     }
@@ -123,24 +124,24 @@ class AuthController {
       const magicLink = await em.findOne(MagicLink, {where: {token}});
 
       if (!magicLink) {
-        res.status(404).send({message: 'Magic link not found'});
+        res.status(StatusCodes.NOT_FOUND).send({message: 'Magic link not found'});
         return;
       }
 
       if (magicLink.isExpired()) {
-        res.status(400).send({message: 'Magic link has expired'});
+        res.status(StatusCodes.BAD_REQUEST).send({message: 'Magic link has expired'});
         return;
       }
 
       if (magicLink.used) {
-        res.status(400).send({message: 'Magic link has already been used'});
+        res.status(StatusCodes.BAD_REQUEST).send({message: 'Magic link has already been used'});
         return;
       }
 
       const existingUser = await em.findOne(User, {where: {id: magicLink.userId}});
 
       if (!existingUser) {
-        res.status(404).send({message: 'User not found'});
+        res.status(StatusCodes.NOT_FOUND).send({message: 'User not found'});
         return;
       }
 
@@ -161,7 +162,7 @@ class AuthController {
         sameSite: 'none',
       });
 
-      res.status(200).send({message: 'User logged in'});
+      res.status(StatusCodes.OK).send({message: 'User logged in'});
     } catch (err) {
       next(err);
     }
