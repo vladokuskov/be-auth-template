@@ -11,4 +11,12 @@ const loginSchema = Joi.object({
   password: Joi.string().min(1).required(),
 });
 
-export {loginSchema, signUpSchema};
+const magicLinkSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+const magicLinkVerifySchema = Joi.object({
+  token: Joi.string().required(),
+});
+
+export {loginSchema, signUpSchema, magicLinkSchema, magicLinkVerifySchema};
