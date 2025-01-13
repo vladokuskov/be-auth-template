@@ -10,6 +10,7 @@ import emailService from '@/services/email.service';
 import bcrypt from 'bcrypt';
 import {NextFunction, Request, RequestHandler, Response} from 'express';
 import {StatusCodes} from 'http-status-codes';
+import fetch from 'node-fetch';
 
 class AuthController {
   signup: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
@@ -166,6 +167,72 @@ class AuthController {
     } catch (err) {
       next(err);
     }
+  };
+
+  socialGoogle: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+    const GOOGLE_OAUTH_URL = process.env.GOOGLE_OAUTH_URL;
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    const GOOGLE_CALLBACK_URL = `http://localhost:${process.env.PORT}/auth/social/google/callback`;
+    const GOOGLE_OAUTH_SCOPES = [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'openid',
+    ];
+
+    const scopes = GOOGLE_OAUTH_SCOPES.join(' ');
+    const GOOGLE_OAUTH_CONSENT_SCREEN_URL = `${GOOGLE_OAUTH_URL}?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_CALLBACK_URL}&access_type=offline&response_type=code&scope=${scopes}`;
+    res.redirect(GOOGLE_OAUTH_CONSENT_SCREEN_URL);
+  };
+
+  socialGoogleCallback: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+    const {code} = req.query;
+    const GOOGLE_CALLBACK_URL = `http://localhost:${process.env.PORT}/auth/social/google/callback`;
+
+    const data = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: GOOGLE_CALLBACK_URL,
+      grant_type: 'authorization_code',
+    };
+
+    // Google access token endpoint
+    // Exchange the code for an access token ID
+    const accessTokenRes = await fetch(process.env.GOOGLE_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+
+    const accessTokenData: Record<string, any> = await accessTokenRes.json();
+    const {id_token} = accessTokenData;
+
+    // Verify the token’s validity and obtain the user's profile information
+    const tokenInfoRes = await fetch(`${process.env.GOOGLE_TOKEN_INFO_URL}?id_token=${id_token}`);
+    const tokenInfoData: Record<string, any> = await tokenInfoRes.json();
+
+    // Create a new user if not exist
+    const {email} = tokenInfoData;
+
+    let user = await em.findOne(User, {where: {email}});
+
+    if (!user) {
+      user = em.create(User, {email, username: 'Random name'});
+      await em.save(user);
+    }
+
+    // expire 1 month from now
+    const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
+    const session = em.create(Session, {userId: user.id, expiresAt});
+    await em.save(session);
+
+    res.cookie('sessionId', session.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'development',
+      expires: session.expiresAt,
+      sameSite: 'none',
+    });
+
+    res.status(StatusCodes.OK).send({message: 'User logged in'});
   };
 }
 const authController: AuthController = new AuthController();

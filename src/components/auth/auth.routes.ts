@@ -11,6 +11,9 @@ authRoutes.use('/reset-password', passwordResetRoutes);
 authRoutes.post('/signup', validate(signUpSchema), authController.signup);
 authRoutes.post('/login', validate(loginSchema), authController.login);
 
+authRoutes.get('/social/google', authController.socialGoogle);
+authRoutes.get('/social/google/callback', authController.socialGoogleCallback);
+
 // Auth via email link
 authRoutes.post('/magic-link', validate(magicLinkSchema), authController.createMagicLink);
 authRoutes.post('/magic-link/verify', validate(magicLinkVerifySchema), authController.verifyMagicLink);
