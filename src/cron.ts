@@ -1,3 +1,4 @@
+import cleanExpiredPasswordResets from '@/jobs/cleanExpiredPasswordResets.job';
 import cleanExpiredSessionsJob from '@/jobs/cleanExpiredSessions.job';
 import {logger} from '@/logger';
 import cronInstance, {schedule} from 'node-cron';
@@ -12,6 +13,9 @@ export class Cron {
 
     // Clean expired sessions every hour
     this.cron.schedule('0 * * * *', cleanExpiredSessionsJob);
+
+    // Clean expired password resets at 5 AM
+    this.cron.schedule('0 5 * * *', cleanExpiredPasswordResets);
   }
 }
 

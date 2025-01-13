@@ -8,7 +8,16 @@ const signUpSchema = Joi.object({
 
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(1).required(),
+  password: Joi.string().min(8).required(),
+});
+
+const resetPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+const resetPasswordProceedSchema = Joi.object({
+  token: Joi.string().required(),
+  password: Joi.string().min(8).required(),
 });
 
 const magicLinkSchema = Joi.object({
@@ -19,4 +28,11 @@ const magicLinkVerifySchema = Joi.object({
   token: Joi.string().required(),
 });
 
-export {loginSchema, signUpSchema, magicLinkSchema, magicLinkVerifySchema};
+export {
+  loginSchema,
+  signUpSchema,
+  magicLinkSchema,
+  magicLinkVerifySchema,
+  resetPasswordSchema,
+  resetPasswordProceedSchema,
+};
