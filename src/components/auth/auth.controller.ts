@@ -4,6 +4,7 @@ import {MagicLink} from '@/entities/MagicLink.entity';
 import {Session} from '@/entities/Session.entity';
 import {User} from '@/entities/User.entity';
 import {generateUniqueToken} from '@/helpers/generaeUniqueToken';
+import {getClientHost} from '@/helpers/getClientHost';
 import em from '@/managers/entity.manager';
 import emailService from '@/services/email.service';
 import bcrypt from 'bcrypt';
@@ -107,7 +108,7 @@ class AuthController {
 
       await em.save(magicLink);
 
-      await emailService.send(EmailTemplate.MAGIC_LINK, {magicToken, to: email});
+      await emailService.send(EmailTemplate.MAGIC_LINK, {magicToken, to: email, host: getClientHost()});
 
       res.status(200).send({message});
     } catch (err) {
