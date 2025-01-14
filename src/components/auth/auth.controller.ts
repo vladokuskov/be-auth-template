@@ -1,12 +1,11 @@
 import {EmailTemplate} from '@/@types/EmailTemplate';
-import {authConfig} from '@/configs/auth.config';
 import {MagicLink} from '@/entities/MagicLink.entity';
-import {Session} from '@/entities/Session.entity';
 import {User} from '@/entities/User.entity';
 import {generateUniqueToken} from '@/helpers/generaeUniqueToken';
 import {getClientHost} from '@/helpers/getClientHost';
 import em from '@/managers/entity.manager';
 import emailService from '@/services/email.service';
+import sessionService from '@/services/session.service';
 import bcrypt from 'bcrypt';
 import {NextFunction, Request, RequestHandler, Response} from 'express';
 import {StatusCodes} from 'http-status-codes';
@@ -28,10 +27,7 @@ class AuthController {
       const user = em.create(User, {email, password: hashedPassword, username});
       await em.save(user);
 
-      // expire 1 month from now
-      const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-      const session = em.create(Session, {userId: user.id, expiresAt});
-      await em.save(session);
+      const session = await sessionService.createSession(user.id);
 
       res.cookie('sessionId', session.id, {
         httpOnly: true,
@@ -63,13 +59,7 @@ class AuthController {
         return;
       }
 
-      const existedSession = await em.findOne(Session, {where: {userId: existingUser.id}});
-      if (existedSession) await em.delete(Session, {id: existedSession.id});
-
-      // expire 1 month from now
-      const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-      const session = em.create(Session, {userId: existingUser.id, expiresAt});
-      await em.save(session);
+      const session = await sessionService.createSession(existingUser.id);
 
       res.cookie('sessionId', session.id, {
         httpOnly: true,
@@ -149,12 +139,7 @@ class AuthController {
       magicLink.used = true;
       await em.save(magicLink);
 
-      const existedSession = await em.findOne(Session, {where: {userId: existingUser.id}});
-      if (existedSession) await em.delete(Session, {id: existedSession.id});
-
-      const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-      const session = em.create(Session, {userId: existingUser.id, expiresAt});
-      await em.save(session);
+      const session = await sessionService.createSession(existingUser.id);
 
       res.cookie('sessionId', session.id, {
         httpOnly: true,
@@ -219,10 +204,7 @@ class AuthController {
       await em.save(user);
     }
 
-    // expire 1 month from now
-    const expiresAt = new Date(Date.now() + authConfig.sessionLifeTime * 24 * 60 * 60 * 1000);
-    const session = em.create(Session, {userId: user.id, expiresAt});
-    await em.save(session);
+    const session = await sessionService.createSession(user.id);
 
     res.cookie('sessionId', session.id, {
       httpOnly: true,
