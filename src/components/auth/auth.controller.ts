@@ -3,6 +3,7 @@ import {MagicLink} from '@/entities/MagicLink.entity';
 import {User} from '@/entities/User.entity';
 import {generateUniqueToken} from '@/helpers/generaeUniqueToken';
 import {getClientHost} from '@/helpers/getClientHost';
+import {getServerHost} from '@/helpers/getServerHost';
 import em from '@/managers/entity.manager';
 import emailService from '@/services/email.service';
 import sessionService from '@/services/session.service';
@@ -155,7 +156,7 @@ class AuthController {
   };
 
   socialGoogle: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
-    const GOOGLE_CALLBACK_URL = `http://localhost:${process.env.PORT}/auth/social/google/callback`;
+    const GOOGLE_CALLBACK_URL = `${getServerHost()}/auth/social/google/callback`;
     const GOOGLE_OAUTH_SCOPES = [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/userinfo.profile',
@@ -168,8 +169,8 @@ class AuthController {
   };
 
   socialGoogleCallback: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
+    const GOOGLE_CALLBACK_URL = `${getServerHost()}/auth/social/google/callback`;
     const {code} = req.query;
-    const GOOGLE_CALLBACK_URL = `http://localhost:${process.env.PORT}/auth/social/google/callback`;
 
     const data = {
       code,
@@ -213,7 +214,7 @@ class AuthController {
       sameSite: 'none',
     });
 
-    res.status(StatusCodes.OK).send({message: 'User logged in'});
+    res.status(StatusCodes.OK).redirect(`${process.env.APP_URL}/`);
   };
 }
 const authController: AuthController = new AuthController();
