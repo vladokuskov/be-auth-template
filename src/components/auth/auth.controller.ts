@@ -1,4 +1,5 @@
 import {EmailTemplate} from '@/@types/EmailTemplate';
+import {appConfig} from '@/configs/app.config';
 import {MagicLink} from '@/entities/MagicLink.entity';
 import {User} from '@/entities/User.entity';
 import {generateUniqueToken} from '@/helpers/generaeUniqueToken';
@@ -32,7 +33,7 @@ class AuthController {
 
       res.cookie('sessionId', session.id, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'development',
+        secure: appConfig.isCookieSecure,
         expires: session.expiresAt,
         sameSite: 'none',
       });
@@ -64,7 +65,7 @@ class AuthController {
 
       res.cookie('sessionId', session.id, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'development',
+        secure: appConfig.isCookieSecure,
         expires: session.expiresAt,
         sameSite: 'none',
       });
@@ -144,7 +145,7 @@ class AuthController {
 
       res.cookie('sessionId', session.id, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'development',
+        secure: appConfig.isCookieSecure,
         expires: session.expiresAt,
         sameSite: 'none',
       });
@@ -209,7 +210,7 @@ class AuthController {
 
     res.cookie('sessionId', session.id, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'development',
+      secure: appConfig.isCookieSecure,
       expires: session.expiresAt,
       sameSite: 'none',
     });
